@@ -249,6 +249,7 @@ void blake3_hash_many(const uint8_t *const *inputs, size_t num_inputs,
                       bool increment_counter, uint8_t flags,
                       uint8_t flags_start, uint8_t flags_end, uint8_t *out) {
   const enum cpu_feature features = get_cpu_features();
+
 #if defined(IS_X86)
 #if !defined(BLAKE3_NO_AVX512)
   if (features & AVX512F) {
@@ -275,6 +276,13 @@ void blake3_hash_many(const uint8_t *const *inputs, size_t num_inputs,
   }
 #endif
 #endif
+
+#if defined(IS_ARM) && defined(BLAKE3_USE_NEON)
+  blake3_hash_many_neon(inputs, num_inputs, blocks, key, counter,
+                        increment_counter, flags, flags_start, flags_end, out);
+  return;
+#endif
+
   blake3_hash_many_portable(inputs, num_inputs, blocks, key, counter,
                             increment_counter, flags, flags_start, flags_end,
                             out);
